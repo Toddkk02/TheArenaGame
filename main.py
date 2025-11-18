@@ -22,11 +22,18 @@ def initialize_player():
 
 def initialize_enemies(num_enemies=5):
     enemies = []
-    for _ in range(num_enemies):
-        x = random.randint(0, config.WIDTH - config.DIMENSION_ENEMY)
-        y = random.randint(0, config.HEIGHT - config.DIMENSION_ENEMY)
+    enemy_positions = [
+        (174, 734),
+        (1452, 739),
+        (1398, 116),
+        (287, 378),
+        (1274, 388)
+    ]
+    
+    for x, y in enemy_positions:
         enemies.append(enemy.Enemy(x, y))
     return enemies
+
 
 def main():
     screen, clock = initialize_game()
@@ -40,7 +47,7 @@ def main():
         clock.tick(config.FPS)
         for event in pg.event.get():
             if event.type == pg.QUIT:
-                running = False 
+                running = False
         for e in enemies:
                 e.update(player_instance, game_map)
                 e.raycast(player_instance, screen)
