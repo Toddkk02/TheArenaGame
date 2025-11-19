@@ -8,7 +8,7 @@ import random
 class Enemy(pg.sprite.Sprite):
     def __init__(self, x, y):
         self.image = pg.Surface((config.DIMENSION_ENEMY, config.DIMENSION_ENEMY))
-        self.image = pg.image.load("./assets/blue_circle.png").convert_alpha()
+        self.image = pg.image.load("./assets/enemy.png").convert_alpha()
         self.image = pg.transform.scale(self.image, (config.DIMENSION_ENEMY, config.DIMENSION_ENEMY))
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y) # position on screen

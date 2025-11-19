@@ -57,7 +57,7 @@ def main():
             e.draw(screen)
         k_pressed = pg.key.get_pressed()
         update_player(k_pressed, game_map)
-
+        player_instance.shoot(screen, enemies)
         
         draw_player(None, screen) # draw player
         pg.display.flip() # update display
