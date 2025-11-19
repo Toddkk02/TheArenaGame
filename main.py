@@ -50,7 +50,7 @@ def main():
                 running = False
         for e in enemies:
                 e.update(player_instance, game_map)
-                e.raycast(player_instance, screen)
+                
         
         game_map.draw(screen) 
         for e in enemies:

@@ -14,56 +14,67 @@ class Enemy(pg.sprite.Sprite):
         self.rect.topleft = (x, y) # position on screen
         self.speed = config.EMEMY_SPEED
         self.player = player.Player
-
+        self.facing_angle = 0
   
     def update(self, player, game_map):
-        #getting old position
+        if not self.angle_vision_degree(player):
+            return
+        
+                # getting old position
         old_x = self.rect.x
         old_y = self.rect.y
-
-
         px, py = player.get_position()
         dx = px - self.rect.centerx
         dy = py - self.rect.centery
         distance = math.hypot(dx, dy)
 
-        
         if distance < config.MIN_FOLLOW_DISTANCE:
             return
         if distance > config.MAX_FOLLOW_DISTANCE:
             return
-
+    
         dx /= distance
         dy /= distance
-
         self.rect.x += dx * self.speed
         self.rect.y += dy * self.speed
-        #check collision
+    
+        # check collision
         if game_map.collision(self.rect):
             self.rect.x = old_x
-            self.rect.y = old_y
+            self.rect.y = old_y            
 
+        self.facing_angle = math.atan2(dy, dx)
 
-    def raycast(self, player, surface, ray_length=200):
-        pos_x, pos_y = self.get_position()
-        rays = []
-        for angle in range(0, 360):
-            angle_rad = math.radians(angle)
-            dx = math.cos(angle_rad)
-            dy = math.sin(angle_rad)
+    def angle_vision_degree(self, player):
+        px, py = player.get_position()
+        dx = px - self.rect.centerx
+        dy = py - self.rect.centery
+        distance = math.hypot(dx, dy)
+    
+        angle_to_player = math.atan2(dy, dx)
+        angle_diff = angle_to_player - self.facing_angle
+    
+        if angle_diff < -math.pi:
+            angle_diff += 2 * math.pi
+        elif angle_diff > math.pi:
+            angle_diff -= 2 * math.pi
             
-            end_x = pos_x + dx * ray_length
-            end_y = pos_y + dy * ray_length
+        return abs(angle_diff) < math.pi / 4 and distance < config.MAX_FOLLOW_DISTANCE 
+    
+    def draw_fov_debug(self, surface):
+        fov_distance = config.MAX_FOLLOW_DISTANCE
+        left_angle = self.facing_angle - math.pi / 4
+        right_angle = self.facing_angle + math.pi / 4
 
-            ray = (pos_x, pos_y), (end_x, end_y)
-            rays.append(ray)
+        left_end = (self.rect.centerx + fov_distance * math.cos(left_angle), self.rect.centery + fov_distance * math.sin(left_angle))
+        right_end = (self.rect.centerx + fov_distance * math.cos(right_angle), self.rect.centery + fov_distance * math.sin(right_angle))
 
-            pg.draw.line(surface, (255, 255, 255), (pos_x, pos_y), (end_x, end_y), 1)
-       
-        return rays
+        pg.draw.line(surface, (255, 0, 0), self.rect.center, left_end)
+        pg.draw.line(surface, (255, 0, 0), self.rect.center, right_end)
 
     def draw(self, surface):
         enemy = surface.blit(self.image, self.rect)
+        self.draw_fov_debug(surface)
         return enemy
     def get_position(self):
         return self.rect.topleft
