@@ -50,7 +50,7 @@ class Player(pg.sprite.Sprite):
     def get_position(self):
         return self.rect.topleft
         
-    def set_position(self, x, y):
+    def set_position(self):
         self.rect.topleft = (100, 100)
         return self.rect.topleft
 
@@ -59,31 +59,27 @@ class Player(pg.sprite.Sprite):
         return self.rect.topleft
     
     def shoot(self, surface, enemies, shot_length):
-        # get current mouse position
         mouse_x, mouse_y = pg.mouse.get_pos()
         x0, y0 = self.rect.center
-
-        # calculate direction to mouse
         dx = mouse_x - x0
         dy = mouse_y - y0
         angle = math.atan2(dy, dx)
-
-        # calculate end point of line with fixed length
         x1 = x0 + math.cos(angle) * shot_length
         y1 = y0 + math.sin(angle) * shot_length
 
-        # draw the line
         pg.draw.line(surface, (255, 0, 0), (x0, y0), (x1, y1), 2)
 
-        # collision detection along the line
-        # step along the line in small increments
         for i in range(0, int(shot_length), 5):
             px = x0 + math.cos(angle) * i
             py = y0 + math.sin(angle) * i
             hit = False
             for e in enemies[:]:
                 if e.rect.collidepoint(px, py):
-                    enemies.remove(e)
+                    dead = e.get_damage(25)  
+                    if dead:
+                        enemies.remove(e)  # remove if dead
+                    return
+                    
                     hit = True
                     break
             if hit:

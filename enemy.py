@@ -15,6 +15,7 @@ class Enemy(pg.sprite.Sprite):
         self.speed = config.EMEMY_SPEED
         self.player = player.Player
         self.facing_angle = 0
+        self.health_point = 100
   
     def update(self, player, game_map):
         if not self.angle_vision_degree(player):
@@ -71,6 +72,16 @@ class Enemy(pg.sprite.Sprite):
 
         pg.draw.line(surface, (255, 0, 0), self.rect.center, left_end)
         pg.draw.line(surface, (255, 0, 0), self.rect.center, right_end)
+    
+
+    def get_damage(self, amount):
+        self.health_point -= amount
+        
+        if self.health_point <= 0:
+            return True
+        
+        return False
+        
 
     def draw(self, surface):
         enemy = surface.blit(self.image, self.rect)

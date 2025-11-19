@@ -33,7 +33,7 @@ def initialize_enemies():
 def main():
     screen, clock = initialize_game()
     player_instance, update_player, draw_player = initialize_player()
-    player_instance.set_position(100, 100)
+    player_instance.set_position()
     enemies = initialize_enemies()
     game_map = map.Map()
     
@@ -47,12 +47,8 @@ def main():
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
-            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:
-                shot_start = player_instance.rect.center
-                shot_end = pg.mouse.get_pos()
+            elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:   
                 shot_timer = 3
-                
-
         for e in enemies:
             e.update(player_instance, game_map)
                 
