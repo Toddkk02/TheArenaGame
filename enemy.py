@@ -16,15 +16,28 @@ class Enemy(pg.sprite.Sprite):
         self.player = player.Player
         self.facing_angle = 0
         self.health_point = 100
-  
-    def update(self, player, game_map):
-        if not self.angle_vision_degree(player):
-            return
+        self.alerted = False
         
-                # getting old position
-        old_x = self.rect.x
-        old_y = self.rect.y
+
+    def update(self, player, game_map):
         px, py = player.get_position()
+    
+        # Player detection
+        if self.angle_vision_degree(player):
+            self.alerted = True    # visto! ora segue il player
+    
+        if not self.alerted:
+            map_center_x = config.WIDTH // 2
+            map_center_y = config.HEIGHT // 2
+
+            dx = map_center_x - self.rect.centerx
+            dy = map_center_y - self.rect.centery
+
+            self.facing_angle = math.atan2(dy, dx)  # guarda il centro
+
+            return  
+
+        # alerted and following player
         dx = px - self.rect.centerx
         dy = py - self.rect.centery
         distance = math.hypot(dx, dy)
@@ -33,19 +46,25 @@ class Enemy(pg.sprite.Sprite):
             return
         if distance > config.MAX_FOLLOW_DISTANCE:
             return
-    
+
+        # Normalize
         dx /= distance
         dy /= distance
+
+        old_x = self.rect.x
+        old_y = self.rect.y
+
         self.rect.x += dx * self.speed
         self.rect.y += dy * self.speed
-    
-        # check collision
-        if game_map.collision(self.rect):
+
+        # Collision check
+        if  game_map.collision(self.rect):
             self.rect.x = old_x
-            self.rect.y = old_y            
+            self.rect.y = old_y
 
+    # aggiorna direzione verso il player
         self.facing_angle = math.atan2(dy, dx)
-
+    
     def angle_vision_degree(self, player):
         px, py = player.get_position()
         dx = px - self.rect.centerx
@@ -61,7 +80,9 @@ class Enemy(pg.sprite.Sprite):
             angle_diff -= 2 * math.pi
             
         return abs(angle_diff) < math.pi / 4 and distance < config.MAX_FOLLOW_DISTANCE 
-    
+
+ 
+            
     def draw_fov_debug(self, surface):
         fov_distance = config.MAX_FOLLOW_DISTANCE
         left_angle = self.facing_angle - math.pi / 4
@@ -76,7 +97,7 @@ class Enemy(pg.sprite.Sprite):
 
     def get_damage(self, amount):
         self.health_point -= amount
-        
+                       
         if self.health_point <= 0:
             return True
         

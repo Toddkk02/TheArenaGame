@@ -12,6 +12,7 @@ class Player(pg.sprite.Sprite):
         self.rect = self.image.get_rect()
         self.rect.topleft = (x, y)
         self.speed = config.PLAYER_SPEED
+        self.dead = False
          
     def update(self, k_pressed, game_map):
         old_x = self.rect.x
@@ -66,21 +67,24 @@ class Player(pg.sprite.Sprite):
         angle = math.atan2(dy, dx)
         x1 = x0 + math.cos(angle) * shot_length
         y1 = y0 + math.sin(angle) * shot_length
-
+        hit, dead = False, False
         pg.draw.line(surface, (255, 0, 0), (x0, y0), (x1, y1), 2)
 
-        for i in range(0, int(shot_length), 5):
+        for i in range(0, shot_length, 5):
             px = x0 + math.cos(angle) * i
             py = y0 + math.sin(angle) * i
-            hit = False
-            for e in enemies[:]:
-                if e.rect.collidepoint(px, py):
-                    dead = e.get_damage(25)  
+            for enemy in enemies:
+                if enemy.rect.collidepoint(px, py):
+                    dead = enemy.get_damage(10)
                     if dead:
-                        enemies.remove(e)  # remove if dead
-                    return
-                    
+                        enemies.remove(enemy)
                     hit = True
                     break
             if hit:
+                damage_logo = pg.font.SysFont("Arial", 20)
+                damage_text = damage_logo.render("-10", True, (255, 0, 0))
+                surface.blit(damage_text, (enemy.rect.centerx, enemy.rect.centery))
                 break
+
+                    
+                
