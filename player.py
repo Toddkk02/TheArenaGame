@@ -61,8 +61,8 @@ class Player(pg.sprite.Sprite):
     def shoot(self, surface, enemies, shot_length):
         mouse_x, mouse_y = pg.mouse.get_pos()
         x0, y0 = self.rect.center
-        dx = mouse_x - x0
-        dy = mouse_y - y0
+        dx = mouse_x - x0 
+        dy = mouse_y - y0 
         angle = math.atan2(dy, dx)
         x1 = x0 + math.cos(angle) * shot_length
         y1 = y0 + math.sin(angle) * shot_length
