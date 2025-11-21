@@ -1,6 +1,7 @@
-from config import TILE_SIZE
 import pygame as pg
-
+from config import *
+import config
+import player
 class Map:
     def __init__(self):
         self.tile_size = TILE_SIZE
@@ -77,5 +78,10 @@ class Map:
                     
         return False
 
-
-    
+    def set_luminosity(self, surface, game_map, camera):
+        overlay_width = len(game_map.map[0]) * game_map.tile_size
+        overlay_height = len(game_map.map) * game_map.tile_size
+        overlay = pg.Surface((overlay_width, overlay_height), pg.SRCALPHA)
+        overlay.fill((0, 0, 0, 200))     
+        camera_x, camera_y = camera.get_position()
+        surface.blit(overlay, (-camera_x, -camera_y))

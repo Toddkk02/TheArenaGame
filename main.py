@@ -26,16 +26,42 @@ def initialize_camera(player_instance):
 def initialize_enemies():
     enemies = []
     enemy_positions = [
-        (174, 734),
-        (1452, 739),
-        (1398, 116),
-        (287, 378),
-        (1274, 388)
+        # Casa in alto a sinistra (interno)
+        (280, 280),
+        
+        # Casa grande in alto centro (interno grande)
+        (1176, 280),
+        (1344, 336),
+        
+        # Casa in alto a destra (interno)
+        (1960, 280),
+        
+        # Casa centro-sinistra 
+        (672, 672),
+        (728, 728),
+        
+        # Casa centro-destra
+        (1680, 672),
+        
+        # Casetta centrale piccola
+        (1176, 1008),
+        
+        # Casa grande in basso a sinistra
+        (280, 1344),
+        (392, 1400),
+        
+        # Casa grande in basso a destra
+        (2016, 1344),
+        (2128, 1400),
+        
+        # Pattuglie esterne (corridoi)
+        (504, 504),      # corridoio nord-ovest
+        (1400, 896),     # centro mappa
+        (2240, 560),     # corridoio est
     ]
     for x, y in enemy_positions:
         enemies.append(enemy.Enemy(x, y))
     return enemies
-
 
 
 def main():
@@ -110,6 +136,9 @@ def main():
 
         damage_number[:] = [dn for dn in damage_number if not dn.is_dead()]
 
+        game_map.set_luminosity(screen, game_map, camera)
+        torch_overlay = player_instance.create_torch_overlay(camera_x, camera_y)
+        screen.blit(torch_overlay, (0, 0))        
         pg.display.flip()
 
 if __name__ == "__main__":
