@@ -5,6 +5,7 @@ import pygame as pg
 import player 
 import enemy
 import map
+import game_over
 
 def initialize_game():
     pg.init()
@@ -30,6 +31,8 @@ def initialize_enemies():
         enemies.append(enemy.Enemy(x, y))
     return enemies
 
+
+
 def main():
     screen, clock = initialize_game()
     player_instance, update_player, draw_player = initialize_player()
@@ -41,28 +44,67 @@ def main():
     #Timer for shot
     shot_timer = 0
     
+
+    damage_number = []
+    paused = False
     
+    background = pg.image.load("./assets/background.png").convert()
+    background = pg.transform.scale(background, (config.WIDTH, config.HEIGHT))
+
+
     while running:
         clock.tick(config.FPS)
         for event in pg.event.get():
             if event.type == pg.QUIT:
                 running = False
+            elif event.type == pg.KEYDOWN:
+                if event.key == pg.K_ESCAPE:
+                    paused = not paused
             elif event.type == pg.MOUSEBUTTONDOWN and event.button == 1:   
                 shot_timer = 3
-        for e in enemies:
-            e.update(player_instance, game_map)
-                
+        if paused:
+            screen.blit(background, (0,0))
+            font = pg.font.Font(None, 60)
+            text = font.render("PAUSED", True, (0, 0,0))
+            screen.blit(text, (config.WIDTH // 2 - text.get_width() // 2, config.HEIGHT // 2 - text.get_height() // 2))
+            pg.display.flip()
+            continue
+        
+        status = game_over.define_status_game(player_instance, enemies) #status of the game
+        if status == config.GAME_STATUS[1]:
+            running = False
+            if status == config.GAME_STATUS[1]:
+                game_over.show_game_over(screen)
+                main()
+                return
+            continue
+        
         game_map.draw(screen) 
         for e in enemies:
+            e.update(player_instance, game_map)
+         
+
+        for e in enemies:
             e.draw(screen)
+            e.attack_player(screen, player_instance, damage_number)
         
         k_pressed = pg.key.get_pressed()
         update_player(k_pressed, game_map)
-        
+        paused = False
+        status = game_over.define_status_game(player_instance, enemies) #status of the game 
+        if status == config.GAME_STATUS[2]:
+            continue
+            
         draw_player(None, screen)
         if shot_timer > 0:
-            player_instance.shoot(screen, enemies, shot_length=config.SHOT_LENGTH)
+            player_instance.shoot(screen, enemies, config.SHOT_LENGTH, damage_number)
             shot_timer -= 1
+        for dn in damage_number:
+            dn.update()
+            dn.draw(screen)
+
+        damage_number[:] = [dn for dn in damage_number if not dn.is_dead()]
+
         pg.display.flip()
 
 if __name__ == "__main__":

@@ -13,6 +13,7 @@ class Player(pg.sprite.Sprite):
         self.rect.topleft = (x, y)
         self.speed = config.PLAYER_SPEED
         self.dead = False
+        self.health_point = 100
          
     def update(self, k_pressed, game_map):
         old_x = self.rect.x
@@ -58,8 +59,13 @@ class Player(pg.sprite.Sprite):
     def reset_position(self):
         self.rect.topleft = (100, 100)
         return self.rect.topleft
-    
-    def shoot(self, surface, enemies, shot_length):
+   
+    def take_damage(self, amount):
+        self.health_point -= amount
+        if self.health_point <= 0:
+            self.dead = True
+
+    def shoot(self, surface, enemies, shot_length, damage_number):
         mouse_x, mouse_y = pg.mouse.get_pos()
         x0, y0 = self.rect.center
         dx = mouse_x - x0 
@@ -76,15 +82,31 @@ class Player(pg.sprite.Sprite):
             for enemy in enemies:
                 if enemy.rect.collidepoint(px, py):
                     dead = enemy.get_damage(10)
+                    damage_number.append(DamageNumber(enemy.rect.centerx, enemy.rect.centery, "-10"))
                     if dead:
                         enemies.remove(enemy)
                     hit = True
                     break
             if hit:
-                damage_logo = pg.font.SysFont("Arial", 20)
-                damage_text = damage_logo.render("-10", True, (255, 0, 0))
-                surface.blit(damage_text, (enemy.rect.centerx, enemy.rect.centery))
                 break
 
                     
-                
+class DamageNumber():
+    def __init__(self, x, y, text):
+        self.x = x
+        self.y = y
+        self.text = text
+        self.alpha = 255
+        self.font = pg.font.Font(None, 30)
+
+    def update(self):
+        self.y -= 1 
+        self.alpha -= 5
+        if self.alpha < 0:
+            self.alpha = 0
+    def draw(self, surface):
+        text = self.font.render(self.text, True, (255, 0, 0))
+        text.set_alpha(self.alpha)
+        surface.blit(text, (self.x, self.y))
+    def is_dead(self):
+        return self.alpha <= 0

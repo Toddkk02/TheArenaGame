@@ -2,9 +2,11 @@ import pygame as pg
 import config
 import math
 import player
+from player import DamageNumber
 import map
 import random
-
+import game_over
+import sys
 class Enemy(pg.sprite.Sprite):
     def __init__(self, x, y):
         self.image = pg.Surface((config.DIMENSION_ENEMY, config.DIMENSION_ENEMY))
@@ -17,6 +19,8 @@ class Enemy(pg.sprite.Sprite):
         self.facing_angle = 0
         self.health_point = 100
         self.alerted = False
+        self.shooting_cooldown = 0
+        self.shooting_interval = 60
         
 
     def update(self, player, game_map):
@@ -64,7 +68,8 @@ class Enemy(pg.sprite.Sprite):
 
     # aggiorna direzione verso il player
         self.facing_angle = math.atan2(dy, dx)
-    
+        
+                    
     def angle_vision_degree(self, player):
         px, py = player.get_position()
         dx = px - self.rect.centerx
@@ -121,4 +126,31 @@ class Enemy(pg.sprite.Sprite):
         self.rect.topleft = (300, 300)
         return self.rect.topleft
 
-    
+    def attack_player(self, surface, player, damage_number):
+        if self.shooting_cooldown > 0:
+            self.shooting_cooldown -= 1
+            return
+
+       
+        
+        if self.angle_vision_degree(player):
+            x0, y0 = self.rect.center
+            x1, y1 = player.get_position()
+
+            pg.draw.line(surface, (255, 0, 0), (x0, y0), (x1, y1), 2)
+            player.take_damage(10)
+            damage_number.append(DamageNumber(player.rect.centerx, player.rect.centery, "-10"))
+            
+
+        # Reset cooldown
+        self.shooting_cooldown = self.shooting_interval
+
+        self.shoot_cooldown = self.shooting_interval
+
+        if player.health_point <= 0:
+            player.dead = True
+            
+
+
+
+   
