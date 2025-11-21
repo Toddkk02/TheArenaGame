@@ -92,8 +92,7 @@ def main():
 
         for e in enemies:
             e.draw(screen, camera_x, camera_y)
-            e.attack_player(screen, player_instance, damage_number)
-        
+            e.attack_player(screen, player_instance, damage_number, camera_x, camera_y)        
         k_pressed = pg.key.get_pressed()
         update_player(k_pressed, game_map)
         paused = False
@@ -103,7 +102,7 @@ def main():
             
         draw_player(None, screen, camera_x, camera_y)
         if shot_timer > 0:
-            player_instance.shoot(screen, enemies, config.SHOT_LENGTH, damage_number)
+            player_instance.shoot(screen, enemies, config.SHOT_LENGTH, damage_number, camera_x, camera_y)
             shot_timer -= 1
         for dn in damage_number:
             dn.update()

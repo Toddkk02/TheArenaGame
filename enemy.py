@@ -111,8 +111,7 @@ class Enemy(pg.sprite.Sprite):
         
 
     def draw(self, surface, cam_x, cam_y):
-        enemy = surface.blit(self.image, self.rect)
-        enemy_pos = (self.rect.x - cam_x, self.rect.y - cam_y)
+        enemy = surface.blit(self.image, (self.rect.x - cam_x, self.rect.y - cam_y)) 
         self.draw_fov_debug(surface, cam_x, cam_y)  
         return enemy
     def get_position(self):
@@ -128,30 +127,37 @@ class Enemy(pg.sprite.Sprite):
         self.rect.topleft = (300, 300)
         return self.rect.topleft
 
-    def attack_player(self, surface, player, damage_number):
+    def attack_player(self, surface, player, damage_number, cam_x, cam_y):
+
+    
         if self.shooting_cooldown > 0:
             self.shooting_cooldown -= 1
             return
-
-       
-        
+    
+    
         if self.angle_vision_degree(player):
+
+    
             x0, y0 = self.rect.center
-            x1, y1 = player.get_position()
+            x1, y1 = player.rect.center
 
-            pg.draw.line(surface, (255, 0, 0), (x0, y0), (x1, y1), 2)
+    
+            screen_x0 = x0 - cam_x
+            screen_y0 = y0 - cam_y
+            screen_x1 = x1 - cam_x
+            screen_y1 = y1 - cam_y
+
+    
+            pg.draw.line(surface, (255, 0, 0), (screen_x0, screen_y0), (screen_x1, screen_y1), 2)
+
+    
             player.take_damage(10)
-            damage_number.append(DamageNumber(player.rect.centerx, player.rect.centery, "-10"))
-            
+            damage_number.append(DamageNumber(x1, y1, "-10"))             
+            self.shooting_cooldown = self.shooting_interval
 
-        # Reset cooldown
-        self.shooting_cooldown = self.shooting_interval
-
-        self.shoot_cooldown = self.shooting_interval
-
-        if player.health_point <= 0:
-            player.dead = True
-            
+    
+            if player.health_point <= 0:
+                player.dead = True            
 
 
 

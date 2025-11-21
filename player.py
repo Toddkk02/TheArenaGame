@@ -19,12 +19,15 @@ class Player(pg.sprite.Sprite):
         old_x = self.rect.x
         old_y = self.rect.y
         
+        map_width = len(game_map.map[0]) * game_map.tile_size
+        map_height = len(game_map.map) * game_map.tile_size
+
         if k_pressed[pg.K_w] and self.rect.top > 0:
             self.rect.y -= self.speed
             if game_map.collision(self.rect):
                 self.rect.y = old_y
                 
-        if k_pressed[pg.K_s] and self.rect.bottom < config.HEIGHT:
+        if k_pressed[pg.K_s] and self.rect.bottom < game_map.map_height:
             self.rect.y += self.speed
             if game_map.collision(self.rect):
                 self.rect.y = old_y
@@ -34,7 +37,7 @@ class Player(pg.sprite.Sprite):
             if game_map.collision(self.rect):
                 self.rect.x = old_x
                 
-        if k_pressed[pg.K_d] and self.rect.right < config.WIDTH:
+        if k_pressed[pg.K_d] and self.rect.right < game_map.map_width:
             self.rect.x += self.speed
             if game_map.collision(self.rect):
                 self.rect.x = old_x
@@ -50,7 +53,7 @@ class Player(pg.sprite.Sprite):
         angle = math.atan2(dy, dx)
         angle_degrees = math.degrees(angle)
         rotated_image = pg.transform.rotate(self.original_image, -angle_degrees)
-        rotated_rect = rotated_image.get_rect(center=self.rect.center)
+        rotated_rect = rotated_image.get_rect(center=(draw_x + config.DIMENSION_PLAYER // 2, draw_y + config.DIMENSION_PLAYER // 2))
         surface.blit(rotated_image, rotated_rect)
 
     def get_position(self):
@@ -69,17 +72,20 @@ class Player(pg.sprite.Sprite):
         if self.health_point <= 0:
             self.dead = True
 
-    def shoot(self, surface, enemies, shot_length, damage_number):
+    def shoot(self, surface, enemies, shot_length, damage_number, cam_x, cam_y):
         mouse_x, mouse_y = pg.mouse.get_pos()
+
+        world_mouse_x = mouse_x + cam_x
+        world_mouse_y = mouse_y + cam_y
+
         x0, y0 = self.rect.center
-        dx = mouse_x - x0 
-        dy = mouse_y - y0 
+        dx = world_mouse_x - x0 
+        dy = world_mouse_y - y0 
         angle = math.atan2(dy, dx)
         x1 = x0 + math.cos(angle) * shot_length
         y1 = y0 + math.sin(angle) * shot_length
         hit, dead = False, False
-        pg.draw.line(surface, (255, 0, 0), (x0, y0), (x1, y1), 2)
-
+        pg.draw.line(surface, (255, 0, 0), (x0 - cam_x, y0 - cam_y), (x1 - cam_x, y1 - cam_y), 2)
         for i in range(0, shot_length, 5):
             px = x0 + math.cos(angle) * i
             py = y0 + math.sin(angle) * i
@@ -111,7 +117,7 @@ class DamageNumber():
     def draw(self, surface, cam_x, cam_y):
         text = self.font.render(self.text, True, (255, 0, 0))
         text.set_alpha(self.alpha)
-        surface.blit(text, (self.x, self.y))
+        surface.blit(text, (self.x - cam_x, self.y - cam_y))
     def is_dead(self):
         return self.alpha <= 0
 
