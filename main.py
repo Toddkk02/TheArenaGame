@@ -18,6 +18,11 @@ def initialize_player():
     player_instance = player.Player(config.DIMENSION_PLAYER, config.DIMENSION_PLAYER)
     return player_instance, player_instance.update, player_instance.draw
 
+def initialize_camera(player_instance):
+    x, y = player_instance.get_position()
+    return player.Camera(x, y)
+
+
 def initialize_enemies():
     enemies = []
     enemy_positions = [
@@ -36,6 +41,7 @@ def initialize_enemies():
 def main():
     screen, clock = initialize_game()
     player_instance, update_player, draw_player = initialize_player()
+    camera = initialize_camera(player_instance)
     player_instance.set_position()
     enemies = initialize_enemies()
     game_map = map.Map()
@@ -78,14 +84,14 @@ def main():
                 main()
                 return
             continue
-        
-        game_map.draw(screen) 
+        camera_x, camera_y = camera.update(player_instance, game_map)
+        game_map.draw(screen, camera_x, camera_y) 
         for e in enemies:
             e.update(player_instance, game_map)
          
 
         for e in enemies:
-            e.draw(screen)
+            e.draw(screen, camera_x, camera_y)
             e.attack_player(screen, player_instance, damage_number)
         
         k_pressed = pg.key.get_pressed()
@@ -95,13 +101,13 @@ def main():
         if status == config.GAME_STATUS[2]:
             continue
             
-        draw_player(None, screen)
+        draw_player(None, screen, camera_x, camera_y)
         if shot_timer > 0:
             player_instance.shoot(screen, enemies, config.SHOT_LENGTH, damage_number)
             shot_timer -= 1
         for dn in damage_number:
             dn.update()
-            dn.draw(screen)
+            dn.draw(screen, camera_x, camera_y)
 
         damage_number[:] = [dn for dn in damage_number if not dn.is_dead()]
 

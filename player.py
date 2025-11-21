@@ -39,8 +39,12 @@ class Player(pg.sprite.Sprite):
             if game_map.collision(self.rect):
                 self.rect.x = old_x
         
-    def draw(self, image, surface):
+    def draw(self, image, surface, cam_x, cam_y):
         mouse_x, mouse_y = pg.mouse.get_pos()
+
+        draw_x = self.rect.x - cam_x
+        draw_y = self.rect.y - cam_y
+
         dx = mouse_x - self.rect.centerx
         dy = mouse_y - self.rect.centery
         angle = math.atan2(dy, dx)
@@ -104,9 +108,40 @@ class DamageNumber():
         self.alpha -= 5
         if self.alpha < 0:
             self.alpha = 0
-    def draw(self, surface):
+    def draw(self, surface, cam_x, cam_y):
         text = self.font.render(self.text, True, (255, 0, 0))
         text.set_alpha(self.alpha)
         surface.blit(text, (self.x, self.y))
     def is_dead(self):
         return self.alpha <= 0
+
+
+class Camera():
+    def __init__(self, x,y):
+        self.x = x
+        self.y = y 
+
+    def update(self, Player, game_map): 
+        map_width = len(game_map.map[0]) * game_map.tile_size
+        map_height = len(game_map.map) * game_map.tile_size        
+        
+        self.x = Player.get_position()[0] - config.WIDTH // 2 # player get_position
+        self.y = Player.get_position()[1] - config.HEIGHT // 2 # player get_position
+
+        self.x = max(0, min(self.x, map_width - config.WIDTH))
+        self.y = max(0, min(self.y, map_height - config.HEIGHT))
+
+        if self.x < 0:
+            self.x = 0
+        if self.y < 0:
+            self.y = 0
+
+        if self.x > map_width - config.WIDTH:
+            self.x = map_width - config.WIDTH
+        if self.y > map_height - config.HEIGHT:
+            self.y = map_height - config.HEIGHT
+
+        return self.x, self.y
+
+
+

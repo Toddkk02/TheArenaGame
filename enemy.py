@@ -88,17 +88,18 @@ class Enemy(pg.sprite.Sprite):
 
  
             
-    def draw_fov_debug(self, surface):
+    def draw_fov_debug(self, surface, cam_x, cam_y):
         fov_distance = config.MAX_FOLLOW_DISTANCE
         left_angle = self.facing_angle - math.pi / 4
         right_angle = self.facing_angle + math.pi / 4
-
-        left_end = (self.rect.centerx + fov_distance * math.cos(left_angle), self.rect.centery + fov_distance * math.sin(left_angle))
-        right_end = (self.rect.centerx + fov_distance * math.cos(right_angle), self.rect.centery + fov_distance * math.sin(right_angle))
-
-        pg.draw.line(surface, (255, 0, 0), self.rect.center, left_end)
-        pg.draw.line(surface, (255, 0, 0), self.rect.center, right_end)
-    
+        left_end = (self.rect.centerx + fov_distance * math.cos(left_angle) - cam_x,
+                    self.rect.centery + fov_distance * math.sin(left_angle) - cam_y)
+        right_end = (self.rect.centerx + fov_distance * math.cos(right_angle) - cam_x,
+                    self.rect.centery + fov_distance * math.sin(right_angle) - cam_y)
+        pg.draw.line(surface, (255, 0, 0), 
+                    (self.rect.centerx - cam_x, self.rect.centery - cam_y), left_end)
+        pg.draw.line(surface, (255, 0, 0), 
+                    (self.rect.centerx - cam_x, self.rect.centery - cam_y), right_end)    
 
     def get_damage(self, amount):
         self.health_point -= amount
@@ -109,9 +110,10 @@ class Enemy(pg.sprite.Sprite):
         return False
         
 
-    def draw(self, surface):
+    def draw(self, surface, cam_x, cam_y):
         enemy = surface.blit(self.image, self.rect)
-        self.draw_fov_debug(surface)
+        enemy_pos = (self.rect.x - cam_x, self.rect.y - cam_y)
+        self.draw_fov_debug(surface, cam_x, cam_y)  
         return enemy
     def get_position(self):
         return self.rect.topleft

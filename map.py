@@ -26,11 +26,11 @@ class Map:
         self.wall = pg.image.load("./assets/wall.png").convert_alpha()
         self.floor = pg.transform.scale(self.floor, (self.tile_size, self.tile_size))
         self.wall = pg.transform.scale(self.wall, (self.tile_size, self.tile_size))
-    def draw(self, surface):
+    def draw(self, surface, cam_x, cam_y):
         for row_index, row in enumerate(self.map):
             for column_index, tile in enumerate(row):
-                x = column_index * self.tile_size
-                y = row_index * self.tile_size
+                x = column_index * self.tile_size - cam_x
+                y = row_index * self.tile_size - cam_y
 
                 if tile == 1:
                     surface.blit(self.wall, (x, y))
