@@ -120,7 +120,8 @@ def main():
             e.draw(screen, camera_x, camera_y)
             e.attack_player(screen, player_instance, damage_number, camera_x, camera_y)        
         k_pressed = pg.key.get_pressed()
-        update_player(k_pressed, game_map)
+        mouse_pos = pg.mouse.get_pos()
+        update_player(k_pressed, game_map, mouse_pos, camera_x, camera_y)
         paused = False
         status = game_over.define_status_game(player_instance, enemies) #status of the game 
         if status == config.GAME_STATUS[2]:
@@ -136,9 +137,7 @@ def main():
 
         damage_number[:] = [dn for dn in damage_number if not dn.is_dead()]
 
-        game_map.set_luminosity(screen, game_map, camera)
-        torch_overlay = player_instance.create_torch_overlay(camera_x, camera_y)
-        screen.blit(torch_overlay, (0, 0))        
+        game_map.render_lighting(screen, camera, player_instance)
         pg.display.flip()
 
 if __name__ == "__main__":

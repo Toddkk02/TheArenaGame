@@ -1,7 +1,7 @@
 import pygame as pg
 from config import *
 import config
-import player
+
 class Map:
     def __init__(self):
         self.tile_size = TILE_SIZE
@@ -45,6 +45,41 @@ class Map:
         self.wall = pg.transform.scale(self.wall, (self.tile_size, self.tile_size))
         self.map_width = len(self.map[0]) * self.tile_size
         self.map_height = len(self.map) * self.tile_size
+        
+        self.light_positions = [
+            (280, 280),
+            (1176, 280),
+            (1344, 336),
+            (1960, 280),
+            (672, 672),
+            (728, 728),
+            (1680, 672),
+            (1176, 1008),
+            (280, 1344),
+            (392, 1400),
+            (2016, 1344),
+            (2128, 1400),
+            (504, 504),
+            (1400, 896),
+            (2240, 560),
+        ]
+        
+        self.light_mask = self.create_light_mask(150)
+        self.player_light_mask = self.create_light_mask(180)
+
+    def create_light_mask(self, radius):
+        size = radius * 2
+        mask = pg.Surface((size, size), pg.SRCALPHA)
+        for y in range(size):
+            for x in range(size):
+                dx = x - radius
+                dy = y - radius
+                dist = (dx * dx + dy * dy) ** 0.5
+                if dist < radius:
+                    alpha = int(255 * (1 - dist / radius))
+                    mask.set_at((x, y), (255, 255, 255, alpha))
+        return mask
+
     def draw(self, surface, cam_x, cam_y):
         for row_index, row in enumerate(self.map):
             for column_index, tile in enumerate(row):
@@ -69,19 +104,25 @@ class Map:
                 if tile == 1:
                     if rect.colliderect(pg.Rect(x, y, self.tile_size, self.tile_size)):
                         return True
-                elif tile == 2:
-                    if rect.colliderect(pg.Rect(x, y, self.tile_size, self.tile_size)):
-                        return False
-                elif tile == 3:
-                    if rect.colliderect(pg.Rect(x, y, self.tile_size, self.tile_size)):
-                        return False
-                    
         return False
 
-    def set_luminosity(self, surface, game_map, camera):
-        overlay_width = len(game_map.map[0]) * game_map.tile_size
-        overlay_height = len(game_map.map) * game_map.tile_size
-        overlay = pg.Surface((overlay_width, overlay_height), pg.SRCALPHA)
-        overlay.fill((0, 0, 0, 200))     
-        camera_x, camera_y = camera.get_position()
-        surface.blit(overlay, (-camera_x, -camera_y))
+    def render_lighting(self, surface, camera, player):
+        cam_x, cam_y = camera.get_position()
+        
+        darkness = pg.Surface((config.WIDTH, config.HEIGHT), pg.SRCALPHA)
+        darkness.fill((0, 0, 0, 220))
+        
+        light_layer = pg.Surface((config.WIDTH, config.HEIGHT), pg.SRCALPHA)
+        
+        for pos in self.light_positions:
+            screen_x = pos[0] - cam_x - 150
+            screen_y = pos[1] - cam_y - 150
+            light_layer.blit(self.light_mask, (screen_x, screen_y))
+        
+        player_x = player.rect.centerx - cam_x - 180
+        player_y = player.rect.centery - cam_y - 180
+        light_layer.blit(self.player_light_mask, (player_x, player_y))
+        
+        darkness.blit(light_layer, (0, 0), special_flags=pg.BLEND_RGBA_SUB)
+        
+        surface.blit(darkness, (0, 0))
